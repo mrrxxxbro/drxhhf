@@ -117,8 +117,8 @@ def get_progress_bar_string(pct):
         pct = float(pct.strip('%'))
     p = min(max(pct, 0), 100)
     cFull = int(p // 10)
-    p_str = '▓' * cFull
-    p_str += '░' * (10 - cFull)
+    p_str = '⬢' * cFull
+    p_str += '⬡' * (10 - cFull)
     return f"{p_str}"
 
 
@@ -141,49 +141,44 @@ def get_readable_message():
 
         elapsed = time() - download.extra_details['startTime']
 
-        msg += f"\n<b>File Name</b> » <i>{escape(f'{download.name()}')}</i>\n\n" if elapsed <= config_dict['AUTO_DELETE_MESSAGE_DURATION'] else ""
-        msg += f"• <b>{download.status()}</b>"
+        msg += f"Hey {tag}, Please wait!\n<b>{download.status()}</b> "
+        msg += f"Your Task [<a href='{download.message.link}'>{download.extra_details['mode']}</a>]"
+        msg += f"\n<b>FileName: </b> <code>{escape(str(download.name()))}</code>"
 
         if download.status() not in [MirrorStatus.STATUS_SEEDING, MirrorStatus.STATUS_PAUSED,
                                      MirrorStatus.STATUS_QUEUEDL, MirrorStatus.STATUS_QUEUEUP]:
 
-            msg += f" » {download.speed()}"
-            msg += f"\n• {get_progress_bar_string(download.progress())} » {download.progress()}"
-            msg += f"\n• <code>Done     </code>» {download.processed_bytes()} of {download.size()}"
-            msg += f"\n• <code>ETA      </code>» {download.eta()}"
-            msg += f"\n• <code>Active   </code>» {get_readable_time(elapsed)}"
-            msg += f"\n• <code>Engine   </code>» {download.engine}"
+            msg += f"\n{get_progress_bar_string(download.progress())} {download.progress()}"
+            msg += f"\n<b>{download.status()}:</b> "
+            msg += f"<code>{download.processed_bytes()}</code> of <code>{download.size()}</code>"
+            msg += f"\n<b>Speed</b>: <code>{download.speed()}</code> | "
+            msg += f"<b>Elapsed:</b> <code>{get_readable_time(time() - download.extra_details['startTime'])}</code>"
+            msg += f"\n<b>ETA</b>: <code>{download.eta()}</code> | <b>Eng</b>: <code>{download.engine}</code>"
 
             if hasattr(download, 'playList'):
                 try:
                     if playlist:=download.playList():
-                        msg += f"\n• <code>YT Count </code>» {playlist}"
+                        msg += f"\n<b>Playlist Downloaded</b>: {playlist}"
                 except:
                     pass
 
             if hasattr(download, 'seeders_num'):
                 try:
-                    msg += f"\n• <code>Seeders  </code>» {download.seeders_num()}"
-                    msg += f"\n• <code>Leechers </code>» {download.leechers_num()}"
+                    msg += f"\n<b>Seeders</b>: {download.seeders_num()}"
+                    msg += f" | <b>Leechers</b>: {download.leechers_num()}"
                 except:
                     pass
 
         elif download.status() == MirrorStatus.STATUS_SEEDING:
-            msg += f"\n• <code>Size     </code>» {download.size()}"
-            msg += f"\n• <code>Speed    </code>» {download.upload_speed()}"
-            msg += f"\n• <code>Uploaded </code>» {download.uploaded_bytes()}"
-            msg += f"\n• <code>Ratio    </code>» {download.ratio()}"
-            msg += f"\n• <code>Time     </code>» {download.seeding_time()}"
+            msg += f"\n<b>Size</b>: {download.size()}"
+            msg += f"\n<b>Speed</b>: {download.upload_speed()}"
+            msg += f" | <b>Uploaded</b>: {download.uploaded_bytes()}"
+            msg += f"\n<b>Ratio</b>: {download.ratio()}"
+            msg += f" | <b>Time</b>: {download.seeding_time()}"
         else:
-            msg += f"\n• <code>Size     </code>» {download.size()}"
-
-        if config_dict['DELETE_LINKS']:
-            msg += f"\n• <code>Task     </code>» {download.extra_details['mode']}"
-        else:
-            msg += f"\n• <code>Task     </code>» <a href='{download.message.link}'>{download.extra_details['mode']}</a>"
-
-        msg += f"\n• <code>User     </code>» {tag}"
-        msg += f"\n⚠️ /{BotCommands.CancelMirror}_{download.gid()}\n\n"
+            msg += f"\n<b>Size</b>: {download.size()}"
+        msg += f"\n<b>To Select:</b> <code>/{BotCommands.BtSelectCommand} {download.gid()}</code>"
+        msg += f"\n<b>To Cancel:</b> <code>/{BotCommands.CancelMirror}_{download.gid()}\n\n"
 
     if len(msg) == 0:
         return None, None
@@ -218,10 +213,6 @@ def get_readable_message():
     msg += f" | <b>UPTM</b>: <code>{get_readable_time(time() - botStartTime)}</code>"
     msg += f"\n<b>DL</b>: <code>{get_readable_file_size(dl_speed)}/s</code>"
     msg += f" | <b>UL</b>: <code>{get_readable_file_size(up_speed)}/s</code>"
-    remaining_time = 86400 - (time() - botStartTime)
-    res_time = '⚠️ ANYTIME ⚠️' if remaining_time <= 0 else get_readable_time(remaining_time)
-    if remaining_time <= 3600:
-        msg += f"\n<b>Bot Restarts In:</b> <code>{res_time}</code>"
     return msg, button
 
 
